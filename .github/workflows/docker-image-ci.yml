@@ -65,23 +65,24 @@ jobs:
         with: 
           tag: ${{ env.LAM_RELEASE }}
 
-      - name: Check If Need Build
-        run: |
-          [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
-          [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
-          echo "BUILD=$BUILD" >> $GITHUB_ENV
-
       - name: Check LAM release 8.2
         if: env.LAM_RELEASE == '8.2'
         run: |
           echo "Add gettext deb package"
           sed -i '87 i gettext \\' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
-      - name: Update Dockerfile for multi-platform build
+      - name: Check If Need Build
         run: |
-          sed -i '29 s/FROM/FROM --platform=\$TARGETPLATFORM/' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
-          sed -i '30 i ARG TARGETPLATFORM' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+          [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
+          [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
+          echo "BUILD=$BUILD" >> $GITHUB_ENV
           cat ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+
+      #- name: Update Dockerfile for multi-platform build
+      #  run: |
+      #    sed -i '29 s/FROM/FROM --platform=\$TARGETPLATFORM/' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+      #    sed -i '30 i ARG TARGETPLATFORM' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+      #    cat ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
@@ -121,7 +122,7 @@ jobs:
           labels: |
             org.opencontainers.image.authors=${{ env.AUTHORS }}
             org.opencontainers.image.vendor=${{ env.VENDOR }}
-            org.opencontainers.image.version=${{ env.RELEASE }}
+            org.opencontainers.image.version=${{ env.LAM_RELEASE }}
 
       - name: Build amd64, arm64v8 and arm32v7
         if: env.BUILD == 'true'
