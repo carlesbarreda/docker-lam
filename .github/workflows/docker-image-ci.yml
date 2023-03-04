@@ -77,7 +77,7 @@ jobs:
         if: env.LAM_RELEASE == '8.2'
         run: |
           echo "Add gettext deb package"
-          sed '87 i         gettext \' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+          sed -i '87 i gettext \\' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
@@ -132,7 +132,7 @@ jobs:
           #tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            LAM_RELEASE=${{ env.RELEASE }}
+            LAM_RELEASE=${{ env.LAM_RELEASE }}
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
