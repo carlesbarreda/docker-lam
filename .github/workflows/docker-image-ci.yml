@@ -39,8 +39,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: LDAPAccountManager/lam
-          fetch-depth: 0
           path: ${{ env.BUILD_PATH }}
+          fetch-depth: 0
 
       - name: Checkout Latest Tag (version)
         run: |
@@ -97,6 +97,10 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.authors=${{ env.AUTHORS }}
+            org.opencontainers.image.vendor=${{ env.VENDOR }}
+            org.opencontainers.image.version=${{ env.RELEASE }}
 
       - name: Build amd64, arm64v8 and arm32v7
         if: env.BUILD == 'true'
@@ -106,9 +110,15 @@ jobs:
           file: ${{ env.BUILD_PATH }}/Dockerfile
           platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
           tags: |
+            ${{ steps.meta-amd64.outputs.tags }}
             ${{ env.IMAGE_NAME }}:${{ env.RELEASE }}
             ${{ env.IMAGE_NAME }}:latest
+          #tags: ${{ steps.meta-amd64.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILDTIME=${{ fromJSON(steps.meta-amd64.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta-amd64.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta-amd64.outputs.json).labels['org.opencontainers.image.revision'] }}
           push: true
 
       - name: Create tag
