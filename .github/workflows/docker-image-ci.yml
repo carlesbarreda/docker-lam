@@ -20,6 +20,7 @@ env:
   BUILD_PATH: "." # default value when not using subfolders
   # BUILD_PATH: subfolder
   RELEASE: ""
+  LAM_RELEASE: ""
   BUILD: false
   COMMIT: false
   AUTHORS: docker@carlesbarreda.cat
@@ -50,8 +51,8 @@ jobs:
 
       - name: Checkout Latest Tag (version)
         run: |
-          #RELEASE=$(git describe --abbrev=0 --tags || echo 'false')
-          RELEASE=8.1
+          RELEASE=$(git describe --abbrev=0 --tags || echo 'false')
+          #RELEASE=lam_8_1
           [[ '$RELEASE' != 'false' ]] && git checkout $RELEASE && BUILD='true'
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
           echo "BUILD=$BUILD" >> $GITHUB_ENV
@@ -64,6 +65,12 @@ jobs:
 
       - name: Check If Need Build
         run: |
+          LAM_RELEASE=$(cat ${{ env.BUILD_PATH }}/lam/VERSION)
+          #LAM_RELEASE=8.1
+          # Bug in 8.2
+          if [[ '$LAM_RELEASE' == '8.2' ]]; then
+            sed '87 i         gettext \' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
+          fi
           BUILD=${{ env.BUILD }}
           [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
           [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
