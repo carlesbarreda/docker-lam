@@ -54,7 +54,9 @@ jobs:
           RELEASE=$(git describe --abbrev=0 --tags || echo 'false')
           #RELEASE=lam_8_1
           [[ '$RELEASE' != 'false' ]] && git checkout $RELEASE && BUILD='true'
+          LAM_RELEASE=$(cat ${{ env.BUILD_PATH }}/lam/VERSION)
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+          echo "LAM_RELEASE=$LAM_RELEASE" >> $GITHUB_ENV
           echo "BUILD=$BUILD" >> $GITHUB_ENV
 
       - name: Check Tag Exists
@@ -65,11 +67,9 @@ jobs:
 
       - name: Check If Need Build
         run: |
-          LAM_RELEASE=$(cat ${{ env.BUILD_PATH }}/lam/VERSION)
           [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
           [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
           echo "BUILD=$BUILD" >> $GITHUB_ENV
-          echo "LAM_RELEASE=$LAM_RELEASE" >> $GITHUB_ENV
 
       - name: Check If LAM release 8.2
         if: env.LAM_RELEASE == '8.2'
