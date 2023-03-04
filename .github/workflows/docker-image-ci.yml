@@ -4,7 +4,7 @@ on:
     - cron: '00 23 * * 0'
 
   push:
-    branches: [ "main" ]
+    branches: [ "update" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
 
@@ -20,8 +20,13 @@ env:
   BUILD_PATH: "." # default value when not using subfolders
   # BUILD_PATH: subfolder
   RELEASE: ""
+  LAM_RELEASE: ""
   BUILD: false
   COMMIT: false
+  AUTHORS: docker@carlesbarreda.cat
+  VENDOR: Carles Barreda
+  GIT_NAME: Carles Barreda
+  GIT_MAIL: 9409275+carlesbarreda@users.noreply.github.com
 
 permissions:
   contents: write
@@ -35,16 +40,19 @@ jobs:
     steps:
 
       # https://github.com/actions/checkout
+      #- name: Checkout carlesbarreda/lam
       - name: Checkout LDAPAccountManager/lam
         uses: actions/checkout@v3
         with:
           repository: LDAPAccountManager/lam
-          fetch-depth: 0
+          #repository: carlesbarreda/lam
           path: ${{ env.BUILD_PATH }}
+          fetch-depth: 0
 
       - name: Checkout Latest Tag (version)
         run: |
           RELEASE=$(git describe --abbrev=0 --tags || echo 'false')
+          #RELEASE=lam_8_1
           [[ '$RELEASE' != 'false' ]] && git checkout $RELEASE && BUILD='true'
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
           echo "BUILD=$BUILD" >> $GITHUB_ENV
@@ -57,10 +65,17 @@ jobs:
 
       - name: Check If Need Build
         run: |
-          BUILD=${{ env.BUILD }}
+          LAM_RELEASE=$(cat ${{ env.BUILD_PATH }}/lam/VERSION)
           [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
           [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
           echo "BUILD=$BUILD" >> $GITHUB_ENV
+          echo "LAM_RELEASE=$LAM_RELEASE" >> $GITHUB_ENV
+
+      - name: Check If LAM release 8.2
+        if: env.LAM_RELEASE == '8.2'
+        run: |
+          echo "Add gettext deb package"
+          sed -i '87 i gettext \\' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
@@ -97,18 +112,28 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.authors=${{ env.AUTHORS }}
+            org.opencontainers.image.vendor=${{ env.VENDOR }}
+            org.opencontainers.image.version=${{ env.RELEASE }}
 
       - name: Build amd64, arm64v8 and arm32v7
         if: env.BUILD == 'true'
         uses: docker/build-push-action@v4
         with:
           context: ${{ env.BUILD_PATH }}/lam-packaging/docker
-          file: ${{ env.BUILD_PATH }}/Dockerfile
+          file: ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
           platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.RELEASE }}
+            ${{ env.IMAGE_NAME }}:${{ env.LAM_RELEASE }}
             ${{ env.IMAGE_NAME }}:latest
+          #tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            LAM_RELEASE=${{ env.LAM_RELEASE }}
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
           push: true
 
       - name: Create tag
@@ -120,6 +145,6 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: "refs/tags/${{ env.RELEASE }}",
+              ref: "refs/tags/${{ env.LAM_RELEASE }}",
               sha: context.sha
             })
