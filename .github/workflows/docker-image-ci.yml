@@ -112,7 +112,8 @@ jobs:
         with:
           context: ${{ env.BUILD_PATH }}/lam-packaging/docker
           file: ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          #platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          platforms: linux/amd64
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.RELEASE }}
             ${{ env.IMAGE_NAME }}:latest
