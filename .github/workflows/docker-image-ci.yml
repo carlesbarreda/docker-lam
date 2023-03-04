@@ -63,7 +63,7 @@ jobs:
         uses: mukunku/tag-exists-action@v1.2.0
         id: checkTag
         with: 
-          tag: ${{ env.LAM_RELEASE }}
+          tag: ${{ env.RELEASE }}
 
       - name: Check If Need Build
         run: |
