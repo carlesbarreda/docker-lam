@@ -39,10 +39,12 @@ jobs:
     steps:
 
       # https://github.com/actions/checkout
-      - name: Checkout LDAPAccountManager/lam
+      #- name: Checkout LDAPAccountManager/lam
+      - name: Checkout carlesbarreda/lam
         uses: actions/checkout@v3
         with:
-          repository: LDAPAccountManager/lam
+          #repository: LDAPAccountManager/lam
+          repository: carlesbarreda/lam
           path: ${{ env.BUILD_PATH }}
           fetch-depth: 0
 
@@ -65,6 +67,7 @@ jobs:
           [[ '${{ env.RELEASE }}' != 'false' && '${{ steps.checkTag.outputs.exists }}' != 'true' ]] && BUILD='true'
           [[ '${{ env.RELEASE }}' != 'false' && '${{ github.event_name }}' == 'push' ]] && BUILD='true'
           echo "BUILD=$BUILD" >> $GITHUB_ENV
+          cat ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
