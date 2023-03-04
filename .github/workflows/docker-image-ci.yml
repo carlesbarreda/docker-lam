@@ -4,7 +4,7 @@ on:
     - cron: '00 23 * * 0'
 
   push:
-    branches: [ "update" ]
+    branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
 
