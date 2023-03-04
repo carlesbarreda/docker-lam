@@ -1,2 +1,2 @@
 # docker-lam
- LDAP Account Manager docker image
+ LDAP Account Manager automated docker image
