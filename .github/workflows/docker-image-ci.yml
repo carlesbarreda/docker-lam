@@ -39,12 +39,12 @@ jobs:
     steps:
 
       # https://github.com/actions/checkout
-      #- name: Checkout LDAPAccountManager/lam
-      - name: Checkout carlesbarreda/lam
+      #- name: Checkout carlesbarreda/lam
+      - name: Checkout LDAPAccountManager/lam
         uses: actions/checkout@v3
         with:
-          #repository: LDAPAccountManager/lam
-          repository: carlesbarreda/lam
+          repository: LDAPAccountManager/lam
+          #repository: carlesbarreda/lam
           path: ${{ env.BUILD_PATH }}
           fetch-depth: 0
 
