@@ -78,12 +78,6 @@ jobs:
           echo "BUILD=$BUILD" >> $GITHUB_ENV
           cat ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
 
-      #- name: Update Dockerfile for multi-platform build
-      #  run: |
-      #    sed -i '29 s/FROM/FROM --platform=\$TARGETPLATFORM/' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
-      #    sed -i '30 i ARG TARGETPLATFORM' ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
-      #    cat ${{ env.BUILD_PATH }}/lam-packaging/docker/Dockerfile
-
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
         if: env.BUILD == 'true'
